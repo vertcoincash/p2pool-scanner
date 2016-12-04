@@ -207,13 +207,15 @@ function Scanner(options) {
 	}
 	    
         self.addr_digested[info.ip] = info;
-        console.log("P2POOL DIGESTING:" + info.ip + ":" + info.port);
+        //console.log("P2POOL DIGESTING:" + info.ip + ":" + info.port);
+
+	var allowedVersions = ["535bfdc-dirty", "535bfdc", "08e9611-dirty", "08e9611", "7531e03-dirty", "7531e03"];
 
         digest_ip(info, function(err, fee){
-            if(!err) {
+            if(!err /*&& allowedVersions.indexOf(info.stats.version) >= 0*/) {
                 info.fee = fee;
                 self.addr_working[info.ip] = info;
-                console.log("FOUND WORKING POOL: " + info.ip + ":" + info.port);
+                console.log("FOUND WORKING POOL: " + info.ip + ":" + info.port + " " + info.stats.version);
 
                 digest_local_stats(info, function(err, stats) {
                     if(!err)
@@ -236,6 +238,9 @@ function Scanner(options) {
             }
             else {
                 delete self.addr_working[info.ip];
+		/*if(!err && allowedVersions.indexOf(info.stats.version) < 0) {
+		   console.log("Node was wrong version: " + info.stats.version);
+		}*/
                 continue_digest();
             }
 
