@@ -1,4 +1,3 @@
-
 var fs = require('fs'),
     http = require('http'),
     exec = require('child_process').exec,
@@ -54,7 +53,7 @@ function Scanner(options) {
             +"a:visited { text-decoration: none; color: #0051AD; }"
             +"a:hover { text-decoration: none; color: #F04800; }"
             +".row-grey { background-color: #f3f3f3;  }"
-            +".p2p {  width: 728px; margin-left: 200px; border: 1px solid #aaa;  box-shadow: 2px 2px 2px #aaa; padding: 2px;  }"
+            +".p2p {  width: 728px; margin: auto; border: 1px solid #aaa;  box-shadow: 2px 2px 2px #aaa; padding: 2px;  }"
             +".p2p-row { width: 710px; padding: 10px; height: 16px; }"
             +".p2p-caption { width: 710px; text-align: center;  background-color: #ddd; padding-top: 4px; padding-bottom: 8px;}"
             +".p2p div { float : left; }"
@@ -66,7 +65,7 @@ function Scanner(options) {
             +"</style>"
             +"</head><body>";
         if(logo)
-            str += "<div style='float:left;margin:16px;'><img src=\""+logo+"\" /></div><br style='clear:both;'/>";
+            str += "<div style='margin:16px;'><img src=\""+logo+"\" /></div><br style='clear:both;'/>";
         str += "<center><a href='https://github.com/forrestv/p2pool' target='_blank'>PEER TO PEER "+(config.currency.toUpperCase())+" MINING NETWORK</a> - PUBLIC NODE LIST<br/><span style='font-size:10px;color:#333;'>GENERATED ON: "+(new Date())+"</span></center><p/>"
         if(self.poolstats)
             str += "<center>Pool speed: "+(self.poolstats.pool_hash_rate/1000000).toFixed(2)+" "+config.speed_abbrev+"</center>";
@@ -171,7 +170,7 @@ function Scanner(options) {
     self.restore_working = function() {
         try {
             self.addr_working = JSON.parse(fs.readFileSync(config.store_file, 'utf8'));
-        } catch(ex) { /*console.log(ex);*/ }
+        } catch(ex) { console.log(ex); }
     }
 
     // inject new IPs from p2pool addr file
@@ -195,20 +194,19 @@ function Scanner(options) {
 
     // execute scan of a single IP
     self.digest = function() {
-
         if(!_.size(self.addr_pending))
             return self.list_complete();
 
         var info = _.find(self.addr_pending, function() { return true; });
         delete self.addr_pending[info.ip];
         self.addr_digested[info.ip] = info;
-        // console.log("P2POOL DIGESTING:",info.ip);
+        console.log("P2POOL DIGESTING:" + info.ip + ":" + info.port);
 
         digest_ip(info, function(err, fee){
             if(!err) {
                 info.fee = fee;
                 self.addr_working[info.ip] = info;
-                // console.log("FOUND WORKING POOL: ", info.ip);
+                console.log("FOUND WORKING POOL: " + info.ip + ":" + info.port);
 
                 digest_local_stats(info, function(err, stats) {
                     if(!err)

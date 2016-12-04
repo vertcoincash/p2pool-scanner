@@ -1,6 +1,3 @@
-
-// if you know of a better way or a public geolocation API, please modify this!
-
 var http = require('http')
 
 function Geo(options) {
@@ -8,51 +5,27 @@ function Geo(options) {
         
     function request(options, callback)
     {    
-        http_handler = http;
-        var req = http_handler.request(options, function(res) {
-            res.setEncoding('utf8');
-            var result = '';
-            res.on('data', function (data) {
-                result += data;
-            });
+	http.get(options.host, function(res){
+   	 var body = '';
 
-            res.on('end', function () {
-                callback(null, result);
-            });
+    	res.on('data', function(chunk){
+            body += chunk;
+    	});
+
+    	res.on('end', function(){
+            var response = JSON.parse(body);
+            console.log("Got a response: ", response);
+ 	    callback(null, response);       
         });
-
-        req.on('socket', function (socket) {
-            socket.setTimeout(options.timeout);  
-            socket.on('timeout', function() {
-                req.abort();
-            });
+        }).on('error', function(e){
+            console.error("Got an error: ", e);
         });
-
-        req.on('error', function(e) {
-            callback(e);
-        });
-
-        req.end();
     }
 
-    function extract_geo(html) {
-       
-        // if you have a better way of doing this
-        // or know of a free geoip locator, then
-        // please change this!
-
-        html = html.replace(/[\r\n]/g, "");
-        var b = html.match(/Country:.*absmiddle/gm);
-        var c = b[0].match(/_blank.*\<\/a\>/g);
-        var d = c[0]
-        var country = d.substring(8,d.length-4);
-        var e = b[0].match(/src=\'.*alt/g);
-        var f = e[0];
-        var img = "http://www.geoiptool.com/"+f.substring(6, f.length-5);
-        
+    function extract_geo(response) {
         var o = {
-            country : country,
-            img : img
+            country : response["country_name"],
+            img : ""
         }
 
         return o;
@@ -62,9 +35,9 @@ function Geo(options) {
 
         // console.log("QUERYING IP:",ip);
         var options = {
-            host : 'www.geoiptool.com',
+            host : 'http://freegeoip.net/json/github.com',
             port : 80,
-            path: '/en/?IP='+ip,
+            path: '/json/'+ip,
             method: 'GET'
         }
 
@@ -74,7 +47,6 @@ function Geo(options) {
             var geo = null;
             try {
                 var geo = extract_geo(response);
-                // console.log(geo.country," ",geo.img);
             } catch(ex) {
                 console.error(ex);
             }
