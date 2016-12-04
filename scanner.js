@@ -65,7 +65,7 @@ function Scanner(options) {
             +"</style>"
             +"</head><body>";
         if(logo)
-            str += "<div style='margin:16px;'><img src=\""+logo+"\" /></div><br style='clear:both;'/>";
+            str += "<div style='text-align:center;'><img src=\""+logo+"\" /></div><br style='clear:both;'/>";
         str += "<center><a href='https://github.com/forrestv/p2pool' target='_blank'>PEER TO PEER "+(config.currency.toUpperCase())+" MINING NETWORK</a> - PUBLIC NODE LIST<br/><span style='font-size:10px;color:#333;'>GENERATED ON: "+(new Date())+"</span></center><p/>"
         if(self.poolstats)
             str += "<center>Pool speed: "+(self.poolstats.pool_hash_rate/1000000).toFixed(2)+" "+config.speed_abbrev+"</center>";
