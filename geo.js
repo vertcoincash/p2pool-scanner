@@ -23,9 +23,15 @@ function Geo(options) {
     }
 
     function extract_geo(response) {
-        var o = {
-            country : response["country_name"],
-            img : ""
+        var countryString;
+	if(response["city"] == "") {
+	  countryString = response["country_name"];
+	} else {
+	  countryString = response["city"] + ", " + response["country_name"];
+	}
+	var o = {
+            country : countryString,
+            img : "https://geoiptool.com/static/img/flags/" + response["country_code"].toLowerCase() + ".gif"
         }
 
         return o;
@@ -35,9 +41,8 @@ function Geo(options) {
 
         // console.log("QUERYING IP:",ip);
         var options = {
-            host : 'http://freegeoip.net/json/github.com',
+            host : 'http://freegeoip.net/json/'+ip,
             port : 80,
-            path: '/json/'+ip,
             method: 'GET'
         }
 

@@ -34,6 +34,11 @@ function Scanner(options) {
             res.write(str);
             res.end();
         });
+	app.get('/api', function(req, res) {
+	    var str = self.json();
+            res.write(str);
+            red.end();
+	});
         
         http.createServer(app).listen(config.http_port, function() {
             console.log("HTTP server listening on port: ",config.http_port);    
@@ -44,6 +49,9 @@ function Scanner(options) {
     if(logo)
         logo = "data:image/png;base64,"+logo;
 
+    self.json = function() {
+        return JSON.stringify(self.addr_working);
+    };
 
     self.render = function() {
         var str = "<html><head>"
@@ -67,7 +75,7 @@ function Scanner(options) {
             +"</head><body>";
         if(logo)
             str += "<div style='text-align:center;'><img src=\""+logo+"\" /></div><br style='clear:both;'/>";
-        str += "<center><a href='https://github.com/forrestv/p2pool' target='_blank'>PEER TO PEER "+(config.currency.toUpperCase())+" MINING NETWORK</a> - PUBLIC NODE LIST<br/><span style='font-size:10px;color:#333;'>GENERATED ON: "+(new Date())+"</span></center><p/>"
+        str += "<center><a href='https://github.com/metalicjames/p2pool-lyra2re' target='_blank'>PEER TO PEER "+(config.currency.toUpperCase())+" MINING NETWORK</a> - PUBLIC NODE LIST<br/><span style='font-size:10px;color:#333;'>GENERATED ON: "+(new Date())+"</span></center><p/>"
         if(self.poolstats)
             str += "<center>Pool speed: "+(self.poolstats.pool_hash_rate/1000000).toFixed(2)+" "+config.speed_abbrev+"</center>";
         str += "<center>Currently observing "+(self.nodes_total || "N/A")+" nodes.<br/>"+_.size(self.addr_working)+" nodes are public with following IPs:</center><p/>";
@@ -81,11 +89,11 @@ function Scanner(options) {
         _.each(list, function(info) {
             var ip = info.ip;
 
-            var version = info.stats.version ? info.stats.version.replace(/-g.*/, "") : "N/A";
-            var uptime = info.stats ? (info.stats.uptime / 60 / 60 / 24).toFixed(1) : "N/A";
+            var version = info.stats.version;
+            var uptime = (info.stats.uptime / 60 / 60 / 24).toFixed(1);
             var fee = (info.fee || 0).toFixed(2);
 
-            str += "<div class='p2p-row "+(row++ & 1 ? "row-grey" : "")+"'><div class='p2p-ip'><a href='http://"+ip+":9327/static/' target='_blank'>"+ip+":9327</a></div><div class='p2p-version'>"+version+"</div><div class='p2p-fee'>"+fee+"%</div><div class='p2p-uptime'>"+uptime+" days</div>";
+            str += "<div class='p2p-row "+(row++ & 1 ? "row-grey" : "")+"'><div class='p2p-ip'><a href='http://"+ip+':'+9171+"/static/' target='_blank'>"+ip+":"+9171+"</a></div><div class='p2p-version'>"+version+"</div><div class='p2p-fee'>"+fee+"%</div><div class='p2p-uptime'>"+uptime+" days</div>";
             str += "<div class='p2p-geo'>";
             if(info.geo) {
                 str += "<a href='http://www.geoiptool.com/en/?IP="+info.ip+"' target='_blank'>"+info.geo.country+" "+"<img src='"+info.geo.img+"' align='absmiddle' border='0'/></a>";
@@ -207,20 +215,36 @@ function Scanner(options) {
 	}
 	    
         self.addr_digested[info.ip] = info;
-        //console.log("P2POOL DIGESTING:" + info.ip + ":" + info.port);
+        console.log("P2POOL DIGESTING:" + info.ip + ":" + 9171);
 
-	var allowedVersions = ["535bfdc-dirty", "535bfdc", "08e9611-dirty", "08e9611", "7531e03-dirty", "7531e03"];
+	var allowedVersions = ["fdc4e2d-dirty", 
+			       "20e6354-dirty", 
+			       "8542674-dirty", 
+			       "c174c98-dirty", 
+			       "fcfb6ad-dirty", 
+			       "3877fc7-dirty", 
+			       "fdc4e2d", 
+                               "20e6354", 
+                               "8542674", 
+                               "c174c98", 
+                               "fcfb6ad", 
+                               "3877fc7", 
+                               "e0909bc-dirty", 
+                               "e0909bc", 
+                               "952287c", 
+                               "952287c-dirty", 
+                               "b092f6b", 
+                               "b092f6b-dirty"];
 
         digest_ip(info, function(err, fee){
-            if(!err /*&& allowedVersions.indexOf(info.stats.version) >= 0*/) {
-                info.fee = fee;
-                self.addr_working[info.ip] = info;
-                console.log("FOUND WORKING POOL: " + info.ip + ":" + info.port + " " + info.stats.version);
-
+            if(!err) {
                 digest_local_stats(info, function(err, stats) {
-                    if(!err)
-                        info.stats = stats;
-                    digest_global_stats(info, function(err, stats) {
+		    if(!err && allowedVersions.indexOf(stats.version) >= 0) {
+                    	info.fee = fee;
+		        info.stats = stats;
+	                console.log("FOUND WORKING POOL: " + info.ip + ":9171 " + info.stats.version);
+                	self.addr_working[info.ip] = info;    
+		digest_global_stats(info, function(err, stats) {
                         if(!err)
                             self.update_global_stats(stats);
 
@@ -234,6 +258,7 @@ function Scanner(options) {
                         else
                             continue_digest();
                     });
+		}
                 });
             }
             else {
@@ -264,7 +289,7 @@ function Scanner(options) {
 
         var options = {
           host: info.ip,
-          port: 9327,
+          port: 9171,
           path: '/fee',
           method: 'GET'
         };
@@ -276,7 +301,7 @@ function Scanner(options) {
 
         var options = {
           host: info.ip,
-          port: 9327,
+          port: 9171,
           path: '/local_stats',
           method: 'GET'
         };
@@ -288,7 +313,7 @@ function Scanner(options) {
 
         var options = {
           host: info.ip,
-          port: 9327,
+          port: 9171,
           path: '/global_stats',
           method: 'GET'
         };
@@ -308,12 +333,12 @@ function Scanner(options) {
             });
 
             res.on('end', function () {
-                if(options.plain)
+		if(options.plain)
                     callback(null, result);
                 else {
                     try {
                         var o = JSON.parse(result);
-                        callback(null, o);
+			callback(null, o);
                     } catch(ex) {
                         console.error(ex);
                         callback(ex);
