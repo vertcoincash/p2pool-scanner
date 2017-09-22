@@ -37,7 +37,7 @@ function Scanner(options) {
 	app.get('/api', function(req, res) {
 	    var str = self.json();
             res.write(str);
-            red.end();
+            res.end();
 	});
         
         http.createServer(app).listen(config.http_port, function() {
@@ -234,7 +234,9 @@ function Scanner(options) {
                                "952287c", 
                                "952287c-dirty", 
                                "b092f6b", 
-                               "b092f6b-dirty"];
+                               "b092f6b-dirty",
+			       "649807a",
+			       "649807a-dirty"];
 
         digest_ip(info, function(err, fee){
             if(!err) {
