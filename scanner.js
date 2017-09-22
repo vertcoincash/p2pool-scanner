@@ -37,7 +37,7 @@ function Scanner(options) {
 	app.get('/api', function(req, res) {
 	    var str = self.json();
             res.write(str);
-            red.end();
+            res.end();
 	});
         
         http.createServer(app).listen(config.http_port, function() {
