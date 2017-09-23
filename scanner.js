@@ -37,9 +37,18 @@ function Scanner(options) {
 	app.get('/api', function(req, res) {
 	    var str = self.json();
             res.write(str);
-            red.end();
+            res.end();
 	});
-        
+	app.get('/urls', function(req, res) {
+	    var urls = [];
+            for(var url in self.addr_working) {
+                urls.push(url);
+	    }
+		
+	    res.write(JSON.stringify(urls));
+            res.end();
+	}); 
+       
         http.createServer(app).listen(config.http_port, function() {
             console.log("HTTP server listening on port: ",config.http_port);    
         });
