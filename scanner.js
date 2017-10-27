@@ -245,7 +245,7 @@ function Scanner(options) {
                                "b092f6b", 
                                "b092f6b-dirty",
 			       "649807a",
-			       "649807a-dirty"
+			       "649807a-dirty",
                                "d7ddaa4",
                                "d7ddaa4-dirty"];
 
